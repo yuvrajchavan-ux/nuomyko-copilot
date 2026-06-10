@@ -66,7 +66,13 @@
   <div class="card">
     <div class="ctitle">👤 Client Details</div>
     <div class="frow"><div class="field"><label>Full Legal Name</label><input id="in" placeholder="As on Aadhaar / PAN"></div><div class="field"><label>Birth Name (if different)</label><input id="ibn" placeholder="Leave blank if same"></div></div>
-    <div class="frow t"><div class="field"><label>Date of Birth</label><input type="date" id="idob"></div><div class="field"><label>Birth Time</label><input type="time" id="ibt"></div><div class="field"><label>Birth City</label><input id="ibc" placeholder="City of birth"></div></div>
+    <div class="frow t"><div class="field"><label>Date of Birth</label><input type="date" id="idob" placeholder="YYYY-MM-DD">
+      <input type="text" id="idob_manual" placeholder="If picker fails: 1978-05-10" 
+        style="margin-top:6px;font-size:14px;padding:8px 12px;border-radius:8px;border:1px solid rgba(0,0,0,.2);width:100%;display:none">
+      <button type="button" onclick="document.getElementById('idob_manual').style.display=document.getElementById('idob_manual').style.display==='none'?'block':'none'" 
+        style="margin-top:4px;font-size:12px;color:var(--t3);background:none;border:none;cursor:pointer;padding:2px 0">
+        ⌨️ Type date manually (if picker doesn't work)
+      </button></div><div class="field"><label>Birth Time</label><input type="time" id="ibt"></div><div class="field"><label>Birth City</label><input id="ibc" placeholder="City of birth"></div></div>
     <div class="frow"><div class="field"><label>Current City</label><input id="icity" placeholder="For hora calculations"></div><div class="field"><label>Occupation</label><input id="iocc" placeholder="What they do"></div></div>
     <div class="frow t"><div class="field"><label>Session Type</label><select id="isess"><option value="quick">Quick Clarity — 30 min</option><option value="full" selected>Full Reading — 60 min</option><option value="deep">Deep Dive — 120+ min</option></select></div><div class="field"><label>Mobile Number</label><input id="imob" placeholder="For numerology check"></div><div class="field"><label>Vehicle Number</label><input id="iveh" placeholder="Registration plate"></div></div>
     <div class="frow o"><div class="field"><label>Watch</label><input id="iwat" placeholder="Brand + dial color e.g. Casio black dial, silver strap"></div></div>
@@ -727,10 +733,24 @@ function dstatus(n,counts){const c=cls(n,counts[n]);if(c==='pres')return`<span c
 
 function calcAll(){
   try {
-    const dobStr=document.getElementById('idob').value;
+    let dobStr=document.getElementById('idob').value;
+    // iPhone fallback — try manual text field
+    if(!dobStr){
+      const manualDob=document.getElementById('idob_manual');
+      if(manualDob) dobStr=manualDob.value;
+    }
     if(!dobStr){showAlt('ialert','Please enter Date of Birth first.','aw');return;}
-    const dob=new Date(dobStr+'T00:00:00');
-    if(isNaN(dob.getTime())){showAlt('ialert','Invalid date. Please use the date picker.','aw');return;}
+    // Parse multiple formats: YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY
+    let dob;
+    if(/^\d{4}-\d{2}-\d{2}$/.test(dobStr)){
+      dob=new Date(dobStr+'T00:00:00');
+    } else if(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(dobStr)){
+      const parts=dobStr.split(/[\/\-]/);
+      dob=new Date(parseInt(parts[2]),parseInt(parts[1])-1,parseInt(parts[0]));
+    } else {
+      dob=new Date(dobStr);
+    }
+    if(isNaN(dob.getTime())){showAlt('ialert','Invalid date. Try format: 1978-05-10','aw');return;}
     const name=(document.getElementById('in')||{}).value||'';
     const bname=(document.getElementById('ibn')||{}).value||'';
     const session=(document.getElementById('isess')||{}).value||'';
