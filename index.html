@@ -493,6 +493,70 @@ select, input, textarea    { background: #FFFFFF !important; color: #1A1614 !imp
   display: none;
 }
 
+
+/* ── NAV COLLAPSE ── */
+.nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px 6px;
+  background: rgba(255,255,255,.98);
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+.nav-toggle-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--t2);
+  letter-spacing: .04em;
+}
+.nav-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gold2);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.nav-toggle-btn:active { opacity: .8; }
+.nav.collapsed .navgroup { display: none !important; }
+.nav.collapsed .navselect { display: none !important; }
+.nav-tabs-bar {
+  padding: 6px 12px 4px;
+}
+
+/* Active tab pill shown when collapsed */
+.nav-current-pill {
+  display: none;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold2);
+  padding: 4px 0;
+}
+.nav.collapsed .nav-current-pill {
+  display: block;
+}
+
+/* Tighter nav on mobile */
+@media (max-width: 768px) {
+  .nav .navgroup {
+    gap: 5px;
+    padding: 5px 10px;
+  }
+  .tb {
+    font-size: 13px !important;
+    padding: 8px 13px !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -500,7 +564,14 @@ select, input, textarea    { background: #FFFFFF !important; color: #1A1614 !imp
   <div class="logo">NUOMYKO <span>Co-Pilot v2</span></div>
   <div class="today" id="todayBadge"></div>
 </header>
-<nav class="nav">
+<div class="nav-toggle">
+  <span class="nav-current-pill" id="navCurrentPill">① Intake</span>
+  <span class="nav-toggle-label" id="navToggleLabel">📋 16 Tabs</span>
+  <button class="nav-toggle-btn" onclick="toggleNav()" id="navToggleBtn">
+    ▲ Hide Tabs
+  </button>
+</div>
+<nav class="nav" id="mainNav">
   <div class="navgroup">
     <button class="tb on" onclick="sw('intake',this)">① Intake</button>
     <button class="tb" onclick="sw('numbers',this)">② Numbers</button>
@@ -6335,6 +6406,41 @@ function autoFill81()   {
   if (S.pool) show81(); 
 }
 
+
+// Auto-collapse on mobile at load
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.innerWidth < 768) {
+    const nav = document.getElementById('mainNav');
+    const btn = document.getElementById('navToggleBtn');
+    const lbl = document.getElementById('navToggleLabel');
+    if (nav) nav.classList.add('collapsed');
+    if (btn) btn.textContent = '▼ Show Tabs';
+    if (lbl) lbl.style.display = 'none';
+  }
+});
+
+// ── NAV COLLAPSE ──
+function toggleNav() {
+  const nav  = document.getElementById('mainNav');
+  const btn  = document.getElementById('navToggleBtn');
+  const lbl  = document.getElementById('navToggleLabel');
+  const pill = document.getElementById('navCurrentPill');
+  if (!nav) return;
+  const collapsed = nav.classList.toggle('collapsed');
+  btn.textContent  = collapsed ? '▼ Show Tabs' : '▲ Hide Tabs';
+  lbl.style.display = collapsed ? 'none' : 'block';
+  pill.style.display = collapsed ? 'block' : 'none';
+}
+
+// Update the current pill label when a tab is switched
+const _origSw = sw;
+function sw(id, btn) {
+  _origSw(id, btn);
+  const pill = document.getElementById('navCurrentPill');
+  if (pill && btn) pill.textContent = btn.textContent;
+}
+
 </script>
+
 </body>
 </html>
